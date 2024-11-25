@@ -57,6 +57,10 @@ class GraphEditor {
     }
   }
 
+  //   ** TODO: **
+  //   Switch key maps to dblclick for left click to allow for
+  //   Drag and panning
+
   #handleMouseDown(evt) {
     // right click
     if (evt.button == 2) {
