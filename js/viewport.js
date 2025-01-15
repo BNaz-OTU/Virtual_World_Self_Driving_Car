@@ -33,7 +33,7 @@ class Viewport {
   }
 
   // Without this it would mess up the location of where you want to create points/lines
-  //
+  // this.offset, this.zoom and this.center is used to help properly adjust the mouse clicks after panning
   getMouse(evt, subtractDragOffset = false) {
     const p = new Point(
       (evt.offsetX - this.center.x) * this.zoom - this.offset.x,
@@ -98,18 +98,19 @@ class Viewport {
   }
 
   #handleKeyDown(evt) {
+    // When "COMMAND" key is held it will allow for the mouse to be used for panning
     if (evt.key == "Meta") {
       this.commandKeyActive = true;
-      console.log(this.commandKeyActive);
-      //   console.log("KEYDOWN");
+      //   console.log(this.commandKeyActive); DEBUG
+      //   console.log("KEYDOWN"); DEBUG
     }
   }
 
   #handleKeyUp(evt) {
     if (evt.key == "Meta") {
       this.commandKeyActive = false;
-      console.log(this.commandKeyActive);
-      //   console.log("KEYUP");
+      //   console.log(this.commandKeyActive); DEBUG
+      //   console.log("KEYUP"); DEBUG
     }
   }
 
@@ -118,15 +119,15 @@ class Viewport {
       // middle button
       this.drag.start = this.getMouse(evt);
       this.drag.active = true;
-      this.selected = null;
+      //   this.selected = null;
       this.commandClickActive = true;
-      console.log("MouseDown");
+      //   console.log("MouseDown"); DEBUG
     }
   }
 
   #handleMouseMove(evt) {
     if (this.commandKeyActive == true && this.commandClickActive == true) {
-      console.log("MouseMove");
+      //   console.log("MouseMove"); DEBUG
     }
 
     if (this.drag.active) {
@@ -138,7 +139,7 @@ class Viewport {
   #handleMouseUp(evt) {
     if (this.commandKeyActive == true && this.commandClickActive == true) {
       this.commandClickActive = false;
-      console.log("MouseUp");
+      //   console.log("MouseUp"); DEBUG
     }
 
     if (this.drag.active) {

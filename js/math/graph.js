@@ -4,6 +4,9 @@ class Graph {
     this.segments = segments;
   }
 
+  // Converts the JSON object parameter into point and segment objects, without this
+  // the point and segment lines would be displayed on the screen still, however, the would not
+  // be functional (no dragging points and segements properly, etc)
   static load(info) {
     const points = info.points.map((i) => new Point(i.x, i.y));
     const segments = info.segments.map(
