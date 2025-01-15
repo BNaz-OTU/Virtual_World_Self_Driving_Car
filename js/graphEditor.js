@@ -6,9 +6,9 @@ class GraphEditor {
 
     this.ctx = this.canvas.getContext("2d");
 
-    this.selected = null;
-    this.hovered = null;
-    this.dragging = false;
+    this.selected = null; // Checks if point is selected
+    this.hovered = null; // Checks if point is being hovered over
+    this.dragging = false; // Checks if point is being dragged
     this.mouse = null;
 
     this.#addEventListeners();
@@ -37,6 +37,10 @@ class GraphEditor {
     // });
     // ---
 
+    // Without .bind(), 'this' will refer to the canvas (canvas doesn't have graph the
+    // graphEditor has access to the graph), thus not allowing access to the
+    // graphEditor. To overcome this issue use .bind(this) and 'this' will start to
+    // refer to the graphEditor instead
     this.canvas.addEventListener("mousedown", this.#handleMouseDown.bind(this));
     this.canvas.addEventListener("mousemove", this.#handleMouseMove.bind(this));
 
@@ -45,11 +49,11 @@ class GraphEditor {
   }
 
   #handleMouseMove(evt) {
-    this.mouse = this.viewport.getMouse(evt, true);
+    this.mouse = this.viewport.getMouse(evt, true); // refers to viewport the mouse value
     this.hovered = getNearestPoint(
       this.mouse,
       this.graph.points,
-      10 * this.viewport.zoom
+      10 * this.viewport.zoom // multiplying this.viewport.zoom adjusts the threshold for making connections to other points
     );
     if (this.dragging == true) {
       this.selected.x = this.mouse.x;
@@ -64,23 +68,33 @@ class GraphEditor {
   #handleMouseDown(evt) {
     // right click
     if (evt.button == 2) {
+      // (1/2) If a point has already been selected, right-clicking will un-select
       if (this.selected) {
         this.selected = null;
-      } else if (this.hovered) {
+      }
+      // (2/2) But, if you did not select a point and hover over a point, you delete it
+      else if (this.hovered) {
         this.#removePoint(this.hovered);
       }
     }
 
     // left click
     if (evt.button == 0) {
+      // (1/2) If you hover over a point and hold left-click, you can drag the point
       if (this.hovered) {
         this.#select(this.hovered);
         this.dragging = true;
         return;
       }
-      this.graph.addPoint(this.mouse);
-      this.#select(this.mouse);
-      this.hovered = this.mouse;
+      // (2/2) regardless if you dragged a point, as soon as you let go of the left a
+      // new point is created (dragged point will be updated to new position).
+      // NEW: added if statement that connects to viewport, helps determine if command
+      // key was pressed preventing new points from being created
+      if (this.viewport.commandKeyActive == false) {
+        this.graph.addPoint(this.mouse);
+        this.#select(this.mouse);
+        this.hovered = this.mouse;
+      }
     }
   }
 
@@ -111,7 +125,8 @@ class GraphEditor {
       this.hovered.draw(this.ctx, { fill: true });
     }
     if (this.selected) {
-      const intent = this.hovered ? this.hovered : this.mouse;
+      // This function demonstrates the intention to create a line
+      const intent = this.hovered ? this.hovered : this.mouse; // Snapping feature
       new Segment(this.selected, intent).draw(ctx, { dash: [3, 3] });
       this.selected.draw(this.ctx, { outline: true });
     }

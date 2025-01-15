@@ -16,6 +16,9 @@ class Viewport {
       active: false,
     };
 
+    this.commandKeyActive = false;
+    this.commandClickActive = false;
+
     this.#addEventListeners();
   }
 
@@ -25,10 +28,12 @@ class Viewport {
     this.ctx.save();
     this.ctx.translate(this.center.x, this.center.y);
     this.ctx.scale(1 / this.zoom, 1 / this.zoom);
-    const offset = this.getOffset();
+    const offset = this.getOffset(); // Constantly updates everytime viewport is panned (basically update the window as you drag)
     this.ctx.translate(offset.x, offset.y);
   }
 
+  // Without this it would mess up the location of where you want to create points/lines
+  //
   getMouse(evt, subtractDragOffset = false) {
     const p = new Point(
       (evt.offsetX - this.center.x) * this.zoom - this.offset.x,
@@ -42,57 +47,88 @@ class Viewport {
     return add(this.offset, this.drag.offset);
   }
 
+  //   #addEventListeners() {
+  //     this.canvas.addEventListener(
+  //       "mousewheel",
+  //       this.#handleMouseWheel.bind(this)
+  //     );
+
+  //     this.canvas.addEventListener("mousedown", this.#handleMouseDown.bind(this));
+  //     this.canvas.addEventListener("mousemove", this.#handleMouseMove.bind(this));
+  //     this.canvas.addEventListener("mouseup", this.#handleMouseUp.bind(this));
+  //   }
+
+  //   #handleMouseDown(evt) {
+  //     if (evt.button == 1) {
+  //       // middle button
+  //       this.drag.start = this.getMouse(evt);
+  //       this.drag.active = true;
+  //     }
+  //   }
+
+  //   #handleMouseMove(evt) {
+  //     if (this.drag.active) {
+  //       this.drag.end = this.getMouse(evt);
+  //       this.drag.offset = subtract(this.drag.end, this.drag.start);
+  //     }
+  //   }
+
+  //   #handleMouseUp(evt) {
+  //     if (this.drag.active) {
+  //       this.offset = add(this.offset, this.drag.offset);
+  //       this.drag = {
+  //         start: new Point(0, 0),
+  //         end: new Point(0, 0),
+  //         offset: new Point(0, 0),
+  //         active: false,
+  //       };
+  //     }
+  //   }
+
   #addEventListeners() {
     this.canvas.addEventListener(
       "mousewheel",
       this.#handleMouseWheel.bind(this)
     );
-
-    // *** Was trying to implement command button to help move around the canvas,
-    // but would always draw lines. Work in progress ****
-
-    // -----
-    // this.canvas.addEventListener("keydown", (e) => {
-    //   if (e.key == "Meta") {
-    //     this.canvas.addEventListener(
-    //       "mousedown",
-    //       this.#handleMouseDown.bind(this)
-    //     );
-
-    //     this.canvas.addEventListener(
-    //       "mousemove",
-    //       this.#handleMouseMove.bind(this)
-    //     );
-
-    //     this.canvas.addEventListener("mouseup", this.#handleMouseUp.bind(this));
-    //   }
-    // });
-    // ----
-
+    this.canvas.addEventListener("keydown", this.#handleKeyDown.bind(this));
+    this.canvas.addEventListener("keyup", this.#handleKeyUp.bind(this));
     this.canvas.addEventListener("mousedown", this.#handleMouseDown.bind(this));
-
     this.canvas.addEventListener("mousemove", this.#handleMouseMove.bind(this));
-
     this.canvas.addEventListener("mouseup", this.#handleMouseUp.bind(this));
   }
 
+  #handleKeyDown(evt) {
+    if (evt.key == "Meta") {
+      this.commandKeyActive = true;
+      console.log(this.commandKeyActive);
+      //   console.log("KEYDOWN");
+    }
+  }
+
+  #handleKeyUp(evt) {
+    if (evt.key == "Meta") {
+      this.commandKeyActive = false;
+      console.log(this.commandKeyActive);
+      //   console.log("KEYUP");
+    }
+  }
+
   #handleMouseDown(evt) {
-    // Middle button
-    if (evt.button == 1) {
-      // Before: evt.button == 1
+    if (evt.button == 0 && this.commandKeyActive == true) {
+      // middle button
       this.drag.start = this.getMouse(evt);
       this.drag.active = true;
+      this.selected = null;
+      this.commandClickActive = true;
+      console.log("MouseDown");
     }
-
-    // this.canvas.addEventListener("keydown", (e) => {
-    //   if (e.key == "Meta") {
-    //     this.drag.start = this.getMouse(evt);
-    //     this.drag.active = true;
-    //   }
-    // });
   }
 
   #handleMouseMove(evt) {
+    if (this.commandKeyActive == true && this.commandClickActive == true) {
+      console.log("MouseMove");
+    }
+
     if (this.drag.active) {
       this.drag.end = this.getMouse(evt);
       this.drag.offset = subtract(this.drag.end, this.drag.start);
@@ -100,24 +136,13 @@ class Viewport {
   }
 
   #handleMouseUp(evt) {
-    // this.canvas.addEventListener("keyup", (e) => {
-    //   if (e.key == "Meta") {
-    //     if (this.drag.active) {
-    //       this.offset = add(this.offset, this.drag.offset);
-
-    //       this.drag = {
-    //         start: new Point(0, 0),
-    //         end: new Point(0, 0),
-    //         offset: new Point(0, 0),
-    //         active: false,
-    //       };
-    //     }
-    //   }
-    // });
+    if (this.commandKeyActive == true && this.commandClickActive == true) {
+      this.commandClickActive = false;
+      console.log("MouseUp");
+    }
 
     if (this.drag.active) {
       this.offset = add(this.offset, this.drag.offset);
-
       this.drag = {
         start: new Point(0, 0),
         end: new Point(0, 0),
@@ -127,12 +152,37 @@ class Viewport {
     }
   }
 
+  // *** Was trying to implement command button to help move around the canvas,
+  // but would always draw lines. Work in progress ****
+
+  // -----
+  // this.canvas.addEventListener("keydown", (e) => {
+  //   if (e.key == "Meta") {
+  //     this.canvas.addEventListener(
+  //       "mousedown",
+  //       this.#handleMouseDown.bind(this)
+  //     );
+
+  //     this.canvas.addEventListener(
+  //       "mousemove",
+  //       this.#handleMouseMove.bind(this)
+  //     );
+
+  //     this.canvas.addEventListener("mouseup", this.#handleMouseUp.bind(this));
+  //   }
+  // });
+  // ----
+
+  //   evt = "Meta"
+
   #handleMouseWheel(evt) {
+    // Zoom in or out
     // --- Old Version ---
     const dir = Math.sign(evt.deltaY);
-    const step = 0.1;
+    const step = 0.1; // how much to change zoom
     this.zoom += dir * step;
-    this.zoom = Math.max(1, Math.min(5, this.zoom));
+    this.zoom = Math.max(1, Math.min(5, this.zoom)); // Keeps the zoom functionality in a threshold preventing it from zooming to far out or to far in
+
     // --- Old version ---
 
     // ********* Using Mouse Zoom In/Out to Navigate *********
