@@ -101,7 +101,7 @@ class Viewport {
     // When "COMMAND" key is held it will allow for the mouse to be used for panning
     if (evt.key == "Meta") {
       this.commandKeyActive = true;
-      //   console.log(this.commandKeyActive); DEBUG
+      // console.log(this.commandKeyActive); //DEBUG
       //   console.log("KEYDOWN"); DEBUG
     }
   }
@@ -153,29 +153,6 @@ class Viewport {
     }
   }
 
-  // *** Was trying to implement command button to help move around the canvas,
-  // but would always draw lines. Work in progress ****
-
-  // -----
-  // this.canvas.addEventListener("keydown", (e) => {
-  //   if (e.key == "Meta") {
-  //     this.canvas.addEventListener(
-  //       "mousedown",
-  //       this.#handleMouseDown.bind(this)
-  //     );
-
-  //     this.canvas.addEventListener(
-  //       "mousemove",
-  //       this.#handleMouseMove.bind(this)
-  //     );
-
-  //     this.canvas.addEventListener("mouseup", this.#handleMouseUp.bind(this));
-  //   }
-  // });
-  // ----
-
-  //   evt = "Meta"
-
   #handleMouseWheel(evt) {
     // Zoom in or out
     // --- Old Version ---
@@ -183,20 +160,5 @@ class Viewport {
     const step = 0.1; // how much to change zoom
     this.zoom += dir * step;
     this.zoom = Math.max(1, Math.min(5, this.zoom)); // Keeps the zoom functionality in a threshold preventing it from zooming to far out or to far in
-
-    // --- Old version ---
-
-    // ********* Using Mouse Zoom In/Out to Navigate *********
-    // ---------------------------------------------------------
-    // evt.preventDefault();
-    // const dir = Math.sign(evt.deltaY);
-    // const step = 0.1;
-
-    // const oldMouse = this.getMouse(evt);
-
-    // this.zoom += step * dir;
-    // this.zoom = Math.max(1, Math.min(5, this.zoom));
-
-    // this.offset = add(this.offset, subtract(this.getMouse(evt), oldMouse));
   }
 }
