@@ -20,6 +20,9 @@ class World {
     this.roadBorders = [];
     this.buildings = [];
     this.trees = [];
+    this.laneGuides = [];
+
+    this.markings = [];
 
     this.generate;
   }
@@ -35,6 +38,20 @@ class World {
     this.roadBorders = Polygon.union(this.envelopes.map((e) => e.poly));
     this.buildings = this.#generateBuildings();
     this.trees = this.#generateTrees();
+
+    this.laneGuides.length = 0;
+    this.laneGuides.push(...this.#generateLaneGuides());
+  }
+
+  #generateLaneGuides() {
+    const tmpEnvelopes = [];
+    for (const seg of this.graph.segments) {
+      tmpEnvelopes.push(
+        new Envelope(seg, this.roadWidth / 2, this.roadRoundness)
+      );
+    }
+    const segments = Polygon.union(tmpEnvelopes.map((e) => e.poly));
+    return segments;
   }
 
   // Create trees in the world, 'top' represents the highest point of where a
@@ -191,6 +208,10 @@ class World {
     // Prints the road itself
     for (const env of this.envelopes) {
       env.draw(ctx, { fill: "#BBB", stroke: "#BBB", lineWidth: 15 }); // the '{}' determines the color of the road
+    }
+
+    for (const marking of this.markings) {
+      marking.draw(ctx);
     }
 
     for (const seg of this.graph.segments) {

@@ -10,42 +10,40 @@ class GraphEditor {
     this.hovered = null; // Checks if point is being hovered over
     this.dragging = false; // Checks if point is being dragged
     this.mouse = null;
+  }
 
+  enable() {
     this.#addEventListeners();
   }
 
+  disable() {
+    this.#removeEventListeners();
+    this.selected = false;
+    this.hovered = false;
+  }
+
   #addEventListeners() {
-    // *** Was trying to implement command button to help move around the canvas,
-    // but would always draw lines. Work in progress ****
-    // ---
-    // this.canvas.addEventListener("keydown", (e) => {
-    //   if (e.key !== "Meta") {
-    //     this.canvas.addEventListener(
-    //       "mousedown",
-    //       this.#handleMouseDown.bind(this)
-    //     );
-    //     this.canvas.addEventListener(
-    //       "mousemove",
-    //       this.#handleMouseMove.bind(this)
-    //     );
-
-    //     this.canvas.addEventListener("contextmenu", (evt) =>
-    //       evt.preventDefault()
-    //     );
-    //     this.canvas.addEventListener("mouseup", () => (this.dragging = false));
-    //   }
-    // });
-    // ---
-
     // Without .bind(), 'this' will refer to the canvas (canvas doesn't have graph the
     // graphEditor has access to the graph), thus not allowing access to the
     // graphEditor. To overcome this issue use .bind(this) and 'this' will start to
     // refer to the graphEditor instead
-    this.canvas.addEventListener("mousedown", this.#handleMouseDown.bind(this));
-    this.canvas.addEventListener("mousemove", this.#handleMouseMove.bind(this));
 
-    this.canvas.addEventListener("contextmenu", (evt) => evt.preventDefault());
-    this.canvas.addEventListener("mouseup", () => (this.dragging = false));
+    this.boundMouseDown = this.#handleMouseDown.bind(this);
+    this.boundMouseMove = this.#handleMouseMove.bind(this);
+    this.boundMouseUp = () => (this.dragging = false);
+    this.boundContextMenu = (evt) => evt.preventDefault();
+
+    this.canvas.addEventListener("mousedown", this.boundMouseDown);
+    this.canvas.addEventListener("mousemove", this.boundMouseMove);
+    this.canvas.addEventListener("mouseup", this.boundMouseUp);
+    this.canvas.addEventListener("contextmenu", this.boundContextMenu);
+  }
+
+  #removeEventListeners() {
+    this.canvas.removeEventListener("mousedown", this.boundMouseDown);
+    this.canvas.removeEventListener("mousemove", this.boundMouseMove);
+    this.canvas.removeEventListener("mouseup", this.boundMouseUp);
+    this.canvas.removeEventListener("contextmenu", this.boundContextMenu);
   }
 
   #handleMouseMove(evt) {
