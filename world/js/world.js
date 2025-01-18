@@ -287,7 +287,7 @@ class World {
     this.frameCount++;
   }
 
-  draw(ctx, viewPoint, showStartMarkings = true) {
+  draw(ctx, viewPoint, showStartMarkings = true, renderRadius = 1000) {
     this.#updateLights();
 
     // Prints the road itself
@@ -321,7 +321,9 @@ class World {
 
     // This will sort the items to determine which gets printed first,
     // this is done to prevent any weird overlapping
-    const items = [...this.buildings, ...this.trees];
+    const items = [...this.buildings, ...this.trees].filter(
+      (i) => i.base.distanceToPoint(viewPoint) < renderRadius
+    );
     items.sort(
       (a, b) =>
         b.base.distanceToPoint(viewPoint) - a.base.distanceToPoint(viewPoint)
